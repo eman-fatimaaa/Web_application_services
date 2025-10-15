@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using WebApplication1.Data;
 using WebApplication1.Models;
+using WebApplication1.Exceptions;
 
 namespace WebApplication1.Services;
 
@@ -21,7 +22,7 @@ public class BookService : IBookService
     public async Task<Book> CreateAsync(string title, int authorId)
     {
         var exists = await _db.Authors.AnyAsync(a => a.Id == authorId);
-        if (!exists) throw new ArgumentException("AuthorId not found", nameof(authorId));
+        if (!exists) throw new InvalidForeignKeyException("AuthorId not found.");
 
         var entity = new Book { Title = title, AuthorId = authorId, CreatedAt = DateTime.UtcNow };
         _db.Books.Add(entity);
@@ -35,7 +36,7 @@ public class BookService : IBookService
         if (entity is null) return null;
 
         var exists = await _db.Authors.AnyAsync(a => a.Id == authorId);
-        if (!exists) throw new ArgumentException("AuthorId not found", nameof(authorId));
+        if (!exists) throw new InvalidForeignKeyException("AuthorId not found.");
 
         entity.Title = title;
         entity.AuthorId = authorId;

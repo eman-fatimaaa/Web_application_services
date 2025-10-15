@@ -38,6 +38,8 @@ public class Program
         }
 
         app.UseHttpsRedirection();
+        
+        app.UseMiddleware<ErrorHandlingMiddleware>();
 
         // Map controllers (Authors/Books, etc.)
         app.MapControllers();

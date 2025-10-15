@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using WebApplication1.DTOs;
 using WebApplication1.Services;
+using WebApplication1.Exceptions; // <— add
 
 namespace WebApplication1.Controllers;
 
@@ -29,7 +30,7 @@ public class BooksController : ControllerBase
             var dto = new BookItemDto(withAuthor.Id, withAuthor.Title, withAuthor.AuthorId, withAuthor.Author.Name, withAuthor.CreatedAt);
             return Created($"/api/books/{dto.Id}", dto);
         }
-        catch (ArgumentException ex) when (ex.ParamName == "authorId")
+        catch (InvalidForeignKeyException ex) // <— changed
         {
             return BadRequest(new { error = ex.Message });
         }
@@ -62,8 +63,8 @@ public class BooksController : ControllerBase
     [HttpPut("{id:int}")]
     [Consumes("application/json")]
     [ProducesResponseType(typeof(BookItemDto), 200)]
-    [ProducesResponseType(404)]
     [ProducesResponseType(400)]
+    [ProducesResponseType(404)]
     public async Task<ActionResult<BookItemDto>> Update(int id, [FromBody] UpdateBookDto body)
     {
         if (!ModelState.IsValid) return ValidationProblem(ModelState);
@@ -77,7 +78,7 @@ public class BooksController : ControllerBase
             var dto = new BookItemDto(withAuthor.Id, withAuthor.Title, withAuthor.AuthorId, withAuthor.Author.Name, withAuthor.CreatedAt);
             return Ok(dto);
         }
-        catch (ArgumentException ex) when (ex.ParamName == "authorId")
+        catch (InvalidForeignKeyException ex) // <— changed
         {
             return BadRequest(new { error = ex.Message });
         }
