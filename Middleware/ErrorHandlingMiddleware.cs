@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
-using WebApplication1.Exceptions;
 
-namespace WebApplication1.Middleware;
+namespace WebApplication1.Middleware; // <— must match your project namespace
 
 public class ErrorHandlingMiddleware
 {
@@ -14,11 +13,11 @@ public class ErrorHandlingMiddleware
         {
             await _next(ctx);
         }
-        catch (AppNotFoundException ex)
+        catch (WebApplication1.Exceptions.AppNotFoundException ex)
         {
             await WriteProblem(ctx, 404, "Resource not found", ex.Message);
         }
-        catch (InvalidForeignKeyException ex)
+        catch (WebApplication1.Exceptions.InvalidForeignKeyException ex)
         {
             await WriteProblem(ctx, 400, "Invalid relationship", ex.Message);
         }
@@ -36,7 +35,6 @@ public class ErrorHandlingMiddleware
             Title = title,
             Detail = detail
         };
-
         ctx.Response.ContentType = "application/problem+json";
         ctx.Response.StatusCode = status;
         await ctx.Response.WriteAsJsonAsync(problem);
