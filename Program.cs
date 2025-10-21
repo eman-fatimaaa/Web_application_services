@@ -19,6 +19,8 @@ public class Program
         builder.Services.AddScoped<IGenreService, GenreService>();
         builder.Services.AddScoped<IPublisherService, PublisherService>();
         builder.Services.AddScoped<IMemberService, MemberService>();
+        builder.Services.AddScoped<IRequestEnricher, RequestEnricher>();
+
 
         
 
@@ -30,6 +32,10 @@ public class Program
         // Per-entity services
         builder.Services.AddScoped<IAuthorService, AuthorService>();
         builder.Services.AddScoped<IBookService, BookService>();
+        // Program.cs (in the builder.Services section)
+        builder.Services.AddScoped<IRequestEnricher, RequestEnricher>();
+// (and whatever you already have for other services)
+
 
         var app = builder.Build();
 
@@ -40,7 +46,13 @@ public class Program
         }
 
         app.UseHttpsRedirection();
+        app.MapGet("/healthz", () => Results.Ok(new { status = "ok" }));
+
         
+        app.UseMiddleware<ErrorHandlingMiddleware>();
+        app.UseMiddleware<CorrelationIdMiddleware>();
+        app.UseMiddleware<RequestEnrichmentMiddleware>();
+// app.UseMiddleware<RequestTimingMiddleware>(); // optional
         app.UseMiddleware<ErrorHandlingMiddleware>();
 
         // Map controllers (Authors/Books, etc.)

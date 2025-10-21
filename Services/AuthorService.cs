@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using WebApplication1.Data;
+using WebApplication1.Exceptions;
 using WebApplication1.Models;
 
 namespace WebApplication1.Services;
@@ -22,7 +23,11 @@ public class AuthorService : IAuthorService
 
     public async Task<Author> CreateAsync(string name)
     {
-        var entity = new Author { Name = name, CreatedAt = DateTime.UtcNow };
+        var entity = new Author
+        {
+            Name = name,
+            CreatedAt = DateTime.UtcNow
+        };
         _db.Authors.Add(entity);
         await _db.SaveChangesAsync();
         return entity;
@@ -31,7 +36,8 @@ public class AuthorService : IAuthorService
     public async Task<Author?> UpdateAsync(int id, string name)
     {
         var entity = await _db.Authors.FindAsync(id);
-        if (entity is null) return null;
+        if (entity is null) throw new AppNotFoundException("Author not found.");
+
         entity.Name = name;
         await _db.SaveChangesAsync();
         return entity;
@@ -40,8 +46,9 @@ public class AuthorService : IAuthorService
     public async Task<bool> DeleteAsync(int id)
     {
         var entity = await _db.Authors.FindAsync(id);
-        if (entity is null) return false;
-        _db.Authors.Remove(entity); // FK is ON DELETE CASCADE, so related Books go too
+        if (entity is null) throw new AppNotFoundException("Author not found.");
+
+        _db.Authors.Remove(entity); // ON DELETE CASCADE handles related books if configured
         await _db.SaveChangesAsync();
         return true;
     }

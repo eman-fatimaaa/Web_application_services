@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using WebApplication1.DTOs;
 using WebApplication1.Services;
 using WebApplication1.Exceptions; // <— add
+using WebApplication1.Filters;
 
 namespace WebApplication1.Controllers;
 
@@ -35,6 +36,9 @@ public class BooksController : ControllerBase
             return BadRequest(new { error = ex.Message });
         }
     }
+    [HttpGet("secure-ping")]
+    [RequireHeader("X-Client")]
+    public IActionResult SecurePing() => Ok(new { ok = true, serverTime = DateTime.UtcNow });
 
     // READ ALL
     [HttpGet]

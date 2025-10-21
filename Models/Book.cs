@@ -6,7 +6,11 @@ public class Book
     public string Title { get; set; } = default!;
     public DateTime CreatedAt { get; set; }
 
-    // FK + back-reference
     public int AuthorId { get; set; }
     public Author Author { get; set; } = default!;
+
+    public int PublisherId { get; set; }
+    public Publisher Publisher { get; set; } = default!;
+
+    public ICollection<Genre> Genres { get; set; } = new List<Genre>();
 }

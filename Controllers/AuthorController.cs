@@ -22,6 +22,7 @@ public class AuthorsController : ControllerBase
         if (!ModelState.IsValid) return ValidationProblem(ModelState);
 
         var entity = await _authors.CreateAsync(body.Name);
+        // books count is 0 on create
         var dto = new AuthorDetailDto(entity.Id, entity.Name, entity.CreatedAt, 0);
         return Created($"/api/authors/{dto.Id}", dto);
     }
@@ -54,15 +55,15 @@ public class AuthorsController : ControllerBase
     [Consumes("application/json")]
     [ProducesResponseType(typeof(AuthorDetailDto), 200)]
     [ProducesResponseType(404)]
-    [ProducesResponseType(400)]
     public async Task<ActionResult<AuthorDetailDto>> Update(int id, [FromBody] UpdateAuthorDto body)
     {
         if (!ModelState.IsValid) return ValidationProblem(ModelState);
 
-        var entity = await _authors.UpdateAsync(id, body.Name);
-        if (entity is null) return NotFound();
-
-        var dto = new AuthorDetailDto(entity.Id, entity.Name, entity.CreatedAt, entity.Books.Count);
+        // If the id is not found, the service throws AppNotFoundException → middleware returns 404
+        var updated = await _authors.UpdateAsync(id, body.Name);
+        // updated is non-null unless an exception was thrown
+        var entity = await _authors.GetByIdAsync(id)!;
+        var dto = new AuthorDetailDto(entity!.Id, entity.Name, entity.CreatedAt, entity.Books.Count);
         return Ok(dto);
     }
 
@@ -72,7 +73,8 @@ public class AuthorsController : ControllerBase
     [ProducesResponseType(404)]
     public async Task<IActionResult> Delete(int id)
     {
-        var ok = await _authors.DeleteAsync(id);
-        return ok ? NoContent() : NotFound();
+        // If the id is not found, the service throws AppNotFoundException → middleware returns 404
+        await _authors.DeleteAsync(id);
+        return NoContent();
     }
 }
